@@ -67,3 +67,12 @@ def lowess_ag(x, y, f=2. / 3., iter=3):
  ```
 
 ## Adapt and modify the code for Gramfort’s version of Lowess to accommodate train and test sets with multidimensional features.
+
+
+
+
+
+
+
+
+## Test your new function on some real data sets with k-Fold cross-validations
