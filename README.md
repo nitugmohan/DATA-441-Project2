@@ -1,5 +1,7 @@
 # Project2
 
+Nitu Girish Mohan
+
 ## Gramfort's Approach - taken from class notebook
 
 The idea is based on the following references:
