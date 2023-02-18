@@ -227,7 +227,8 @@ print('The Cross-validated Mean Squared Error for Locally Weighted Regression is
 print('The Cross-validated Mean Squared Error for Random Forest is : '+str(np.mean(mse_rf)))
 ```
 
-The Cross-validated Mean Squared Error for Locally Weighted Regression is : 23.53685564215548
+The Cross-validated Mean Squared Error for Locally Weighted Regression is : 23.53685564215548'
+
 The Cross-validated Mean Squared Error for Random Forest is : 16.95579463156351
 
 ### With the Concrete Data:
@@ -265,6 +266,7 @@ print('The Cross-validated Mean Squared Error for Locally Weighted Regression is
 print('The Cross-validated Mean Squared Error for Random Forest is : '+str(np.mean(mse_rf)))
 ```
 The Cross-validated Mean Squared Error for Locally Weighted Regression is : 66.91415418086902
+
 The Cross-validated Mean Squared Error for Random Forest is : 45.09761506471062
 
 ## Create a SciKitLearn-compliant version of the function you wrote for 1) and test it with GridSearchCV from SciKitLearn. 
@@ -320,3 +322,6 @@ gs_lowess.best_params_
 gs_lowess.score(x,y)
 ```
 -1.6547449275510306
+
+
+I referenced the class notebooks for this project.
