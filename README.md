@@ -99,7 +99,8 @@ def lw_ag_md(x, y, xnew,f=2/3,iter=3, intercept=True): #train data, new data
   delta = np.ones(n)
   for iteration in range(iter):
     for i in range(n):
-      W = np.diag(w[:,i])
+      W = np.diag(delta).dot(np.diag(w[:,i]))
+      # when we multiply two diagonal matrices, we get also a diagonal matrix
       b = np.transpose(x1).dot(W).dot(y)
       A = np.transpose(x1).dot(W).dot(x1)
       ##
@@ -108,7 +109,7 @@ def lw_ag_md(x, y, xnew,f=2/3,iter=3, intercept=True): #train data, new data
       #beta, res, rnk, s = linalg.lstsq(A, b)
       yest[i] = np.dot(x1[i],beta)
 
-    residuals = y - yest
+    residuals = y.ravel() - yest
     s = np.median(np.abs(residuals))
     delta = np.clip(residuals / (6.0 * s), -1, 1)
     delta = (1 - delta ** 2) ** 2
@@ -121,10 +122,10 @@ def lw_ag_md(x, y, xnew,f=2/3,iter=3, intercept=True): #train data, new data
     for i in range(len(xnew)):
       ind = np.argsort(np.sqrt(np.sum((x-xnew[i])**2,axis=1)))[:r]
       # the trick below is to have the Delauney triangulation work
-      pca = PCA(n_components=3)
+      pca = PCA(n_components=2)
       x_pca = pca.fit_transform(x[ind])
       tri = Delaunay(x_pca,qhull_options='QJ')
-      f = LinearNDInterpolator(tri,y[ind])
+      f = LinearNDInterpolator(tri,yest[ind])
       output[i] = f(pca.transform(xnew[i].reshape(1,-1))) # the output may have NaN's where the data points from xnew are outside the convex hull of X
   if sum(np.isnan(output))>0:
     g = NearestNDInterpolator(x,y.ravel()) 
@@ -135,9 +136,12 @@ def lw_ag_md(x, y, xnew,f=2/3,iter=3, intercept=True): #train data, new data
   
   ```python
   xtrain, xtest, ytrain, ytest = tts(x,y,test_size=0.3,shuffle=True,random_state=123)
-  yhat = lw_ag_md(xtrain,ytrain,xtest,f=1/50,iter=3,intercept=True)
+  xtrain = scale.fit_transform(xtrain)
+  xtest = scale.transform(xtest)
+  yhat = lw_ag_md(xtrain,ytrain,xtest,f=1/3,iter=3,intercept=True)
   mse(ytest,yhat)
   ```
+  17.229695659407188
 
 
 
@@ -290,7 +294,7 @@ class Lowess_AG_MD:
         f = self.f
         iter = self.iter
         intercept = self.intercept
-        return lw_ag_md(x, y, x_new, f, iter, intercept)
+        return lw_ag_md(x, y, x_new, f, iter, intercept) # this is actually our defined function of Lowess
 
     def get_params(self, deep=True):
     # suppose this estimator has parameters "f", "iter" and "intercept"
@@ -299,7 +303,6 @@ class Lowess_AG_MD:
     def set_params(self, **parameters):
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
-        return self
         
         
 model = Lowess_AG_MD(f=1/5,iter=3,intercept=True)
@@ -311,12 +314,21 @@ mse(ytest,yhat)
 ```python
 lwr_pipe = Pipeline([('zscores', StandardScaler()),
                      ('lwr', Lowess_AG_MD())])
+```
+```python
+# here we have a subtle aspect: the local name of the predictor in the Pipeline:"lwr"
+# to call the hyperparameters you need the local name and two "underscores" symbols and then the name of the parameter 
 params = [{'lwr__f': [1/i for i in range(3,15)],
          'lwr__iter': [1,2,3,4]}]
+```
+```python
 gs_lowess = GridSearchCV(lwr_pipe,
                       param_grid=params,
                       scoring='neg_mean_squared_error',
                       cv=5)
+```
+{'lwr__f': 0.3333333333333333, 'lwr__iter': 2}
+```python
 gs_lowess.fit(x, y)
 gs_lowess.best_params_
 gs_lowess.score(x,y)
